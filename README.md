@@ -4,9 +4,13 @@
 
 # FeedFowardNetwork
 
+* 予測と学習を同時にやるオンライン学習
 ## 使い方
 ```scala
 val ff = new FeedForwardNetwork(3, 2, 2, 2, 3)
+
+ff.fit(/* input */, /* answer */) 
+
 ```
 * この引数はfeedforward network のレイヤーあたりのノード数になる．
 * 最初の引数が特徴量の次元数
