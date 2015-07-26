@@ -21,6 +21,10 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
   def row(i: Int):Seq[Double] = values(i)
   def col(j: Int):Seq[Double] = this.rowIndices.map(this(_, j))
 
+  def dropLastCol: DenseMatrix = {
+    new DenseMatrix(values.map(_.dropRight(1)))
+  }
+
   def *(that: DenseMatrix): DenseMatrix = {
     val v = this.rowIndices.map(i => {
       that.colIndices.map(k => {
@@ -32,13 +36,13 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
   }
 
   // looking for better way
-  def *(that: RowVector): RowVector = {
+  def *(that: ColVector): ColVector = {
     val v = this.rowIndices.map(i => {
       that.colIndices.map(k => {
         this.colIndices.map(j => this(i, j) * that(j, k)).sum
       })
     })
-    new RowVector(v)
+    new ColVector(v)
   }
 
   def +(that: DenseMatrix): DenseMatrix = {
@@ -50,11 +54,20 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
 
     new DenseMatrix(v)
   }
+  def -(that: DenseMatrix): DenseMatrix = {
+    val v = this.rowIndices.map(i =>{
+      this.colIndices.map(j => {
+        this(i, j) - that(i, j)
+      })
+    })
+
+    new DenseMatrix(v)
+  }
 
 }
 
 object DenseMatrix {
-  def apply(n: Int, m: Int): DenseMatrix = {
+  def getGausiaan(n: Int, m: Int): DenseMatrix = {
     val v = for(i <- Range(0, n)) yield {
       for(j <- Range(0, m)) yield {
         Random.nextGaussian()
@@ -64,37 +77,29 @@ object DenseMatrix {
   }
 }
 
-class RowVector(v: Seq[Seq[Double]]) extends DenseMatrix(v) {
+class ColVector(v: Seq[Seq[Double]]) extends DenseMatrix(v) {
 
   def apply(i: Int): Double = values(i)(0)
-  def activateWith(f: Double => Double) = new RowVector(values.map(_.map(f)))
-  def addBias = RowVector(col(0) :+ 1.0)
+  def activateWith(f: Double => Double) = new ColVector(values.map(_.map(f)))
+  def addBias = ColVector(col(0) :+ 1.0)
+  def dropBias = ColVector(col(0).dropRight(1))
   def length = shape._1
   def toSeq = this.col(0)
   def toDenseMatrix = new DenseMatrix(values)
 
-  override def *(that: RowVector):RowVector = {
-    val v = this.rowIndices.map(i =>{
-      this(i, 0) * that(i, 0)
-    })
-    RowVector(v)
-  }
-
-  def +(that: RowVector): RowVector = {
-    val v = this.rowIndices.map(i =>{
-      this.colIndices.map(j => {
-        this(i, j) + that(i, j)
-      })
-    })
-    new RowVector(v)
+  def *:(that: ColVector): ColVector = {
+    ColVector(that.rowIndices.map(i => this(i) * that(i)))
   }
 }
 
-object RowVector {
+object ColVector {
   def apply(v: Seq[Double]) = {
-    new RowVector(v.map(Seq(_)))
+    new ColVector(v.map(Seq(_)))
   }
-  def getOnes(n: Int): RowVector = RowVector(Seq.fill(n)(1.0))
+//  def apply(v: Double*) = {
+//    new ColVector(v.map(Seq(_)))
+//  }
+  def getOnes(n: Int): ColVector = ColVector(Seq.fill(n)(1.0))
 }
 
 

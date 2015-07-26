@@ -1,7 +1,7 @@
 package org.piroyoung
 
 import org.piroyoung.classficate.FeedForwardNetwork
-import org.piroyoung.linalg.RowVector
+import org.piroyoung.linalg.ColVector
 
 /**
  * Created by piroyoung on 7/25/15.
@@ -9,26 +9,19 @@ import org.piroyoung.linalg.RowVector
 object Test {
   def main(args: Array[String]) {
 
-    val ff = new FeedForwardNetwork(4, 3, 2, 2)
+    val ff = new FeedForwardNetwork(3, 2, 2, 2, 3)
 
-    ff.forward(RowVector(Seq(1,1,5,3))).foreach(x => println(x.toString + "\n---"))
-    ff.layers.foreach(x => println(x.weights.toString + "\n---"))
-    println("---")
+    val input = ColVector(Seq(1,0,0))
+    val answer = ColVector(Seq(1,0,0))
 
-//    ff.backword(RowVector(Seq(1,2,5,3)), RowVector(Seq(0, 0))).foreach(x => println(x.toString + "\n---\n "))
+    val input2 = ColVector(Seq(1,0,1))
+    val answer2 = ColVector(Seq(0,1,0))
 
-    val v = RowVector(Seq(1,2,3))
-    println((v.toDenseMatrix * v.t).toString)
-
-//    val in  = ff.layers(0).getActivated(RowVector(Seq(1,1,1)).addBias)
-//    println(ff.layers(0).weights)
-//    println(in.toString)
-
-//    val v = new RowVector(Seq(2,2,2))
-//
-//    println(v.toString)
-//    println(v.addBias.toString)
-
+    for(i <- Range(0,1000)) {
+      println("---")
+      println("signal1:" + ff.fit(input, answer).t.toString)
+      println("signal2:" + ff.fit(input2, answer2).t.toString)
+    }
 
   }
 }
