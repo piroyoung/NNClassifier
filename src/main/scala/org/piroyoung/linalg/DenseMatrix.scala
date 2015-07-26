@@ -65,11 +65,13 @@ object DenseMatrix {
 }
 
 class RowVector(v: Seq[Seq[Double]]) extends DenseMatrix(v) {
+
+  def apply(i: Int): Double = values(i)(0)
   def activateWith(f: Double => Double) = new RowVector(values.map(_.map(f)))
   def addBias = RowVector(col(0) :+ 1.0)
   def length = shape._1
   def toSeq = this.col(0)
-  def -(a: Double): RowVector = RowVector(col(0).map(_ - a))
+  def toDenseMatrix = new DenseMatrix(values)
 
   override def *(that: RowVector):RowVector = {
     val v = this.rowIndices.map(i =>{
@@ -78,6 +80,14 @@ class RowVector(v: Seq[Seq[Double]]) extends DenseMatrix(v) {
     RowVector(v)
   }
 
+  def +(that: RowVector): RowVector = {
+    val v = this.rowIndices.map(i =>{
+      this.colIndices.map(j => {
+        this(i, j) + that(i, j)
+      })
+    })
+    new RowVector(v)
+  }
 }
 
 object RowVector {

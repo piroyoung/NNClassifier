@@ -5,16 +5,14 @@ import org.piroyoung.linalg.Functions._
 /**
  * Created by piroyoung on 7/25/15.
  */
-class NNClassfier {
-
-}
 
 class FeedForwardNetwork(structure: Int*) {
-  private val s = structure.dropRight(1)
+  private val s = structure
   val sizes = s.drop(1) zip s.dropRight(1)
   val outputSize = structure.last
   val inputSize = structure(0)
   var layers = sizes.map(x => Layer.init(x._1, x._2))
+
   def forward(input: RowVector): Seq[RowVector] = {
     var in = input.addBias
 
@@ -24,27 +22,29 @@ class FeedForwardNetwork(structure: Int*) {
     }
   }
 
-  def backword(input: RowVector, answer: RowVector, eta: Double = 0.5): Seq[DenseMatrix] = {
-    val outs = forward(input).reverse
+//  def backword(input: RowVector, answer: RowVector, eta: Double = 0.5): Seq[DenseMatrix] = {
+//    val outs = forward(input)
+//
+//    val o = outs.last
+//    val delta = answer.colIndices.map(i => {
+//      -1 * (answer(i) - o(i)) * o(i) * (1 - o(i))
+//    })
+//
+//  }
 
-    var delta = answer.toSeq.map(a => {
-      RowVector(outs(0).toSeq.map(out => -1 * (out - a) * out * (1 - out)))
-    }).reduce((x, y) => x + y)
-
-//    for (l <- (layers.map(_.weights) zip outs).reverse.drop(1)) yield {
-//      l._2
-//    }
-
-
-  }
 
 }
 
 class Layer(w: DenseMatrix) {
-  val weights = w
+  var weights = w
 
   def forward(input: RowVector, a: Double => Double = sigmoid): RowVector = (weights * input) activateWith a
   def update(e: DenseMatrix): Layer = new Layer(weights + e)
+
+  def backward(output: RowVector, nextDelta: RowVector): DenseMatrix = {
+    //FIXME
+    new DenseMatrix(Seq(Seq()))
+  }
 
 }
 object Layer{

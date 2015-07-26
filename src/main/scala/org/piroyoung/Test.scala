@@ -9,9 +9,16 @@ import org.piroyoung.linalg.RowVector
 object Test {
   def main(args: Array[String]) {
 
-    val ff = new FeedForwardNetwork(3, 2, 4, 5, 2)
+    val ff = new FeedForwardNetwork(4, 3, 2, 2)
 
-    ff.forward(RowVector(Seq(1,1,5))).foreach(x => println(x.toString + "\n---"))
+    ff.forward(RowVector(Seq(1,1,5,3))).foreach(x => println(x.toString + "\n---"))
+    ff.layers.foreach(x => println(x.weights.toString + "\n---"))
+    println("---")
+
+//    ff.backword(RowVector(Seq(1,2,5,3)), RowVector(Seq(0, 0))).foreach(x => println(x.toString + "\n---\n "))
+
+    val v = RowVector(Seq(1,2,3))
+    println((v.toDenseMatrix * v.t).toString)
 
 //    val in  = ff.layers(0).getActivated(RowVector(Seq(1,1,1)).addBias)
 //    println(ff.layers(0).weights)
@@ -22,7 +29,6 @@ object Test {
 //    println(v.toString)
 //    println(v.addBias.toString)
 
-    println((RowVector(Seq(1,2,3)) * RowVector(Seq(3,2,1))).toString)
 
   }
 }
