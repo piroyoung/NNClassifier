@@ -17,7 +17,7 @@ object Test {
     val input2 = ColVector(Seq(1,0,1))
     val answer2 = ColVector(Seq(0,1,0))
 
-    for(i <- Range(0,1000)) {
+    for(i <- Range(0,800)) {
       println("---")
       println("signal1:" + ff.fit(input, answer).t.toString)
       println("signal2:" + ff.fit(input2, answer2).t.toString)

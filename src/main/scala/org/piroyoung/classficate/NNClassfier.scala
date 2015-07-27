@@ -13,6 +13,8 @@ class FeedForwardNetwork(structure: Int*) {
   val inputSize = structure(0)
   var layers = sizes.map(x => Layer.init(x._1, x._2))
 
+  override def toString(): String = layers.map(_.toString()).mkString("\n---\n")
+
   def forward(input: ColVector): Seq[ColVector] = {
     var in = input.addBias
     for (l <- layers) yield {
@@ -59,10 +61,12 @@ class FeedForwardNetwork(structure: Int*) {
 class Layer(w: DenseMatrix) {
   var weights = w
 
-  def forward(input: ColVector, a: Double => Double = sigmoid): ColVector = (weights * input) activateWith a
+  override def toString():String = weights.toString
   def update(e: DenseMatrix): Unit = {
     weights = weights - e
   }
+
+  def forward(input: ColVector, a: Double => Double = sigmoid): ColVector = (weights * input) activateWith a
 
   // returns previous deltas
   // *: culcs element-wise production
