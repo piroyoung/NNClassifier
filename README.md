@@ -2,9 +2,8 @@
 
 機械学習実装の修行用レポジトリ
 
-# FeedFowardNetwork
-
-* 予測と学習を同時にやるオンライン学習
+# FeedForwardNetwork
+ 
 ## 使い方
 ```scala
 val ff = new FeedForwardNetwork(3, 2, 2, 2, 3)
