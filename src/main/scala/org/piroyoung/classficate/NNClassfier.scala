@@ -1,7 +1,8 @@
 package org.piroyoung.classficate
 
-import org.piroyoung.linalg.{ColVector, DenseMatrix}
 import org.piroyoung.linalg.Functions._
+import org.piroyoung.linalg.{ColVector, DenseMatrix}
+
 /**
  * Created by piroyoung on 7/25/15.
  */
@@ -33,7 +34,7 @@ class FeedForwardNetwork(structure: Int*) {
 
     val layerInputs = layers zip inputs
     var d = lastDelta
-    val dd = for(l <- layerInputs.reverse) yield {
+    val dd = for (l <- layerInputs.reverse) yield {
       d = l._1.backward(l._2, d)
       d
     }
@@ -54,14 +55,13 @@ class FeedForwardNetwork(structure: Int*) {
   def predict(input: ColVector): ColVector = {
     forward(input).last.dropBias
   }
-
-
 }
 
 class Layer(w: DenseMatrix) {
   var weights = w
 
-  override def toString():String = weights.toString
+  override def toString(): String = weights.toString
+
   def update(e: DenseMatrix): Unit = {
     weights = weights - e
   }
@@ -75,8 +75,9 @@ class Layer(w: DenseMatrix) {
   }
 
 }
-object Layer{
-  def init(numNodes: Int, inputSize: Int,  seed: Int = 1234): Layer = {
+
+object Layer {
+  def init(numNodes: Int, inputSize: Int, seed: Int = 1234): Layer = {
     new Layer(DenseMatrix.getGausiaan(numNodes, inputSize + 1))
   }
 }
