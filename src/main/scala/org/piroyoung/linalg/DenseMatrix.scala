@@ -24,9 +24,8 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
 
   def col(j: Int): Seq[Double] = this.rowIndices.map(this(_, j))
 
-  def dropLastCol: DenseMatrix = {
-    new DenseMatrix(values.map(_.dropRight(1)))
-  }
+  def dropLastCol: DenseMatrix = new DenseMatrix(values.map(_.dropRight(1)))
+
 
   def *(that: DenseMatrix): DenseMatrix = {
     val v = this.rowIndices.map(i => {
@@ -48,13 +47,16 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
     new ColVector(v)
   }
 
+  def *(d: Double): DenseMatrix = new DenseMatrix(values.map(_.map(_ * d)))
+
+  def /(d: Double):DenseMatrix = new DenseMatrix(values.map(_.map(_ / d)))
+
   def +(that: DenseMatrix): DenseMatrix = {
     val v = this.rowIndices.map(i => {
       this.colIndices.map(j => {
         this(i, j) + that(i, j)
       })
     })
-
     new DenseMatrix(v)
   }
 
@@ -64,7 +66,6 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
         this(i, j) - that(i, j)
       })
     })
-
     new DenseMatrix(v)
   }
 

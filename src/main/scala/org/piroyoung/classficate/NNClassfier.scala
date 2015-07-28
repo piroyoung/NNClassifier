@@ -7,12 +7,15 @@ import org.piroyoung.linalg.{ColVector, DenseMatrix}
  * Created by piroyoung on 7/25/15.
  */
 
-class FeedForwardNetwork(structure: Int*) {
-  private val s = structure
-  val sizes = s.drop(1) zip s.dropRight(1)
-  val outputSize = structure.last
-  val inputSize = structure(0)
-  var layers = sizes.map(x => Layer.init(x._1, x._2))
+class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
+  //  private val s = structure
+  //  val sizes = s.drop(1) zip s.dropRight(1)
+  //  val outputSize = structure.last
+  //  val inputSize = structure(0)
+  var layers = l
+  private var eta: Double = 1
+
+  def setEta(e: Double): Unit = eta = e
 
   override def toString(): String = layers.map(_.toString()).mkString("\n---\n")
 
@@ -46,14 +49,34 @@ class FeedForwardNetwork(structure: Int*) {
     })
   }
 
-  def fit(input: ColVector, answer: ColVector, eta: Double = 0.5): ColVector = {
+  def fit(input: ColVector, answer: ColVector): FeedForwardNetwork = {
     val grads = backward(input, answer)
-    (layers zip grads).foreach(l => l._1.update(l._2))
-    forward(input).last.dropBias
+    (layers zip grads).foreach(l => l._1.update(l._2 * eta))
+    this
+  }
+
+  def fit(input: ColVector, answer: ColVector, iter: Int): FeedForwardNetwork = {
+    for(i <- 0 to iter) {
+      fit(input, answer)
+    }
+    this
   }
 
   def predict(input: ColVector): ColVector = {
     forward(input).last.dropBias
+  }
+
+  def combine(that: FeedForwardNetwork): FeedForwardNetwork = {
+    new FeedForwardNetwork((layers zip that.layers).map(x => x._1 combine (x._2)))
+  }
+}
+
+object FeedForwardNetwork {
+  def apply(structure: Int*): FeedForwardNetwork = {
+    val s = structure
+    val sizes = s.drop(1) zip s.dropRight(1)
+    val layers = sizes.map(x => Layer.init(x._1, x._2))
+    new FeedForwardNetwork(layers)
   }
 }
 
@@ -72,6 +95,10 @@ class Layer(w: DenseMatrix) {
   // *: culcs element-wise production
   def backward(input: ColVector, thisDelta: ColVector): ColVector = {
     (weights.dropLastCol.t * thisDelta) *: ColVector(input.dropBias.toSeq.map(y => y * (1 - y)))
+  }
+
+  def combine(that: Layer) = {
+    new Layer((weights + that.weights) / 2)
   }
 
 }
