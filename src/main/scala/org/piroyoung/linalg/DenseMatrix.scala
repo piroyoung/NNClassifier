@@ -17,9 +17,12 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
   lazy val t = new DenseMatrix(this.colIndices.map(j => this.rowIndices.map(i => this(i, j))))
 
   override def toString: String = values.map(_.mkString("\t")).mkString("\n")
-  def apply(i: Int, j:Int): Double = values(i)(j)
-  def row(i: Int):Seq[Double] = values(i)
-  def col(j: Int):Seq[Double] = this.rowIndices.map(this(_, j))
+
+  def apply(i: Int, j: Int): Double = values(i)(j)
+
+  def row(i: Int): Seq[Double] = values(i)
+
+  def col(j: Int): Seq[Double] = this.rowIndices.map(this(_, j))
 
   def dropLastCol: DenseMatrix = {
     new DenseMatrix(values.map(_.dropRight(1)))
@@ -46,7 +49,7 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
   }
 
   def +(that: DenseMatrix): DenseMatrix = {
-    val v = this.rowIndices.map(i =>{
+    val v = this.rowIndices.map(i => {
       this.colIndices.map(j => {
         this(i, j) + that(i, j)
       })
@@ -54,8 +57,9 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
 
     new DenseMatrix(v)
   }
+
   def -(that: DenseMatrix): DenseMatrix = {
-    val v = this.rowIndices.map(i =>{
+    val v = this.rowIndices.map(i => {
       this.colIndices.map(j => {
         this(i, j) - that(i, j)
       })
@@ -68,8 +72,8 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
 
 object DenseMatrix {
   def getGausiaan(n: Int, m: Int): DenseMatrix = {
-    val v = for(i <- Range(0, n)) yield {
-      for(j <- Range(0, m)) yield {
+    val v = for (i <- Range(0, n)) yield {
+      for (j <- Range(0, m)) yield {
         Random.nextGaussian()
       }
     }
@@ -80,11 +84,17 @@ object DenseMatrix {
 class ColVector(v: Seq[Seq[Double]]) extends DenseMatrix(v) {
 
   def apply(i: Int): Double = values(i)(0)
+
   def activateWith(f: Double => Double) = new ColVector(values.map(_.map(f)))
+
   def addBias = ColVector(col(0) :+ 1.0)
+
   def dropBias = ColVector(col(0).dropRight(1))
+
   def length = shape._1
+
   def toSeq = this.col(0)
+
   def toDenseMatrix = new DenseMatrix(values)
 
   def *:(that: ColVector): ColVector = {
@@ -96,9 +106,10 @@ object ColVector {
   def apply(v: Seq[Double]) = {
     new ColVector(v.map(Seq(_)))
   }
-//  def apply(v: Double*) = {
-//    new ColVector(v.map(Seq(_)))
-//  }
+
+  //  def apply(v: Double*) = {
+  //    new ColVector(v.map(Seq(_)))
+  //  }
   def getOnes(n: Int): ColVector = ColVector(Seq.fill(n)(1.0))
 }
 
