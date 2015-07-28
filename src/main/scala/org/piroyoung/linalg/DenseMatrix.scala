@@ -112,6 +112,17 @@ object ColVector {
   //    new ColVector(v.map(Seq(_)))
   //  }
   def getOnes(n: Int): ColVector = ColVector(Seq.fill(n)(1.0))
+
+  def getOneOfK(label: Int, k: Int): ColVector = {
+    if(label > k) throw new IndexOutOfBoundsException
+    ColVector((0 to (k - 1)).map(x => if(x == label) 1.0 else 0.0))
+  }
+
+  def getOneOfK(label: Double, k: Double): ColVector = {
+    if(label > k) throw new IndexOutOfBoundsException
+    ColVector((0 to (k.toInt - 1)).map(x => if(x == label) 1.0 else 0.0))
+  }
 }
+
 
 
