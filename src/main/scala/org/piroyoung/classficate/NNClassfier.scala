@@ -65,10 +65,10 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
   def predict(input: ColVector): ColVector = {
     forward(input).last.dropBias
   }
-
-  def combine(that: FeedForwardNetwork): FeedForwardNetwork = {
-    new FeedForwardNetwork((layers zip that.layers).map(x => x._1 combine (x._2)))
-  }
+//FIXME
+//  def combine(that: FeedForwardNetwork): FeedForwardNetwork = {
+//    new FeedForwardNetwork((layers zip that.layers).map(x => x._1 combine (x._2)))
+//  }
 }
 
 object FeedForwardNetwork {
@@ -97,9 +97,10 @@ class Layer(w: DenseMatrix) {
     (weights.dropLastCol.t * thisDelta) *: ColVector(input.dropBias.toSeq.map(y => y * (1 - y)))
   }
 
-  def combine(that: Layer) = {
-    new Layer((weights + that.weights) / 2)
-  }
+//FIXME
+//  def combine(that: Layer) = {
+//    new Layer((weights + that.weights) / 2)
+//  }
 
 }
 
