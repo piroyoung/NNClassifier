@@ -101,6 +101,10 @@ class ColVector(v: Seq[Seq[Double]]) extends DenseMatrix(v) {
   def *:(that: ColVector): ColVector = {
     ColVector(that.rowIndices.map(i => this(i) * that(i)))
   }
+
+  override def /(v: Double): ColVector = {
+    ColVector(rowIndices.map(i => this(i) / v))
+  }
 }
 
 object ColVector {
