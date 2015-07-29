@@ -49,17 +49,19 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
     })
   }
 
-  def fit(input: ColVector, answer: ColVector): FeedForwardNetwork = {
+  def update(input: ColVector, answer: ColVector): Unit = {
     val grads = backward(input, answer)
     (layers zip grads).foreach(l => l._1.update(l._2 * eta))
-    this
   }
 
-  def fit(input: ColVector, answer: ColVector, iter: Int): FeedForwardNetwork = {
-    for(i <- 0 to iter) {
-      fit(input, answer)
+  def fit(data:Seq[(ColVector, Double)],k: Int, iter: Int = 1000): FeedForwardNetwork = {
+    var cnt = 0
+    for(i <- Range(0,iter); d <- data){
+      println(cnt)
+      cnt += 1
+      update(d._1, ColVector.getOneOfK(d._2, k))
     }
-    this
+    new FeedForwardNetwork(layers)
   }
 
   def predict(input: ColVector): ColVector = {
