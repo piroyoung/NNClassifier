@@ -1,10 +1,9 @@
 package org.piroyoung.classficate
 
-import org.apache.spark.rdd.RDD
-import org.piroyoung.linalg.Functions._
-import org.piroyoung.linalg.{ColVector, DenseMatrix}
 import java.io.{BufferedWriter, FileWriter}
 
+import org.piroyoung.linalg.Functions._
+import org.piroyoung.linalg.{ColVector, DenseMatrix}
 
 import scala.io.Source
 
@@ -31,7 +30,7 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
   def forward(input: ColVector, a: Double => Double = sigmoid): Seq[ColVector] = {
     var in = input.addBias
     for (l <- layers) yield {
-      in = l.forward(in ,a).addBias
+      in = l.forward(in, a).addBias
       in
     }
   }
@@ -67,23 +66,23 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
     println(v.toString())
   }
 
-  def fit(data:Seq[(ColVector, Double)],k: Int, iter: Int): FeedForwardNetwork = {
-    for(i <- Range(0,iter); d <- data){
+  def fit(data: Seq[(ColVector, Double)], k: Int, iter: Int): FeedForwardNetwork = {
+    for (i <- Range(0, iter); d <- data) {
       print(d._2.toString + "::")
       update(d._1, ColVector.getOneOfK(d._2, k), act)
     }
     new FeedForwardNetwork(layers)
   }
 
-//  def fit(data:RDD[(ColVector, Double)], k: Int, iter: Int, numPartitions: Int): FeedForwardNetwork = {
-//    val f = data.repartition(numPartitions)
-//      .mapPartitions(x => Iterator(fit(x, k, iter)))
-//      .map(x =>(x, 1))
-//      .reduce((x, y) => (x._1 combine  y._1, x._2 + y._2))
-//
-//
-//    new FeedForwardNetwork(f._1.layers.map(_.weights / f._2).map(new Layer(_)))
-//  }
+  //  def fit(data:RDD[(ColVector, Double)], k: Int, iter: Int, numPartitions: Int): FeedForwardNetwork = {
+  //    val f = data.repartition(numPartitions)
+  //      .mapPartitions(x => Iterator(fit(x, k, iter)))
+  //      .map(x =>(x, 1))
+  //      .reduce((x, y) => (x._1 combine  y._1, x._2 + y._2))
+  //
+  //
+  //    new FeedForwardNetwork(f._1.layers.map(_.weights / f._2).map(new Layer(_)))
+  //  }
 
   def predict(input: ColVector): ColVector = {
     forward(input, sigmoid).last.dropBias
@@ -91,7 +90,7 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
 
   def saveAsTextFile(fileName: String): Unit = {
     val bw = new BufferedWriter(new FileWriter(fileName))
-    for(line <- this.toString().split("\n")) {
+    for (line <- this.toString().split("\n")) {
       bw.write(line + "\n")
     }
 
@@ -111,10 +110,11 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
 
     new FeedForwardNetwork(l)
   }
-//FIXME
-//  def combine(that: FeedForwardNetwork): FeedForwardNetwork = {
-//    new FeedForwardNetwork((layers zip that.layers).map(x => x._1 combine (x._2)))
-//  }
+
+  //FIXME
+  //  def combine(that: FeedForwardNetwork): FeedForwardNetwork = {
+  //    new FeedForwardNetwork((layers zip that.layers).map(x => x._1 combine (x._2)))
+  //  }
 }
 
 object FeedForwardNetwork {
@@ -143,10 +143,11 @@ class Layer(w: DenseMatrix) {
   def backward(input: ColVector, thisDelta: ColVector): ColVector = {
     (weights.dropLastCol.t * thisDelta) *: ColVector(input.dropBias.toSeq.map(y => y * (1 - y)))
   }
-//FIXME
-//  def combine(that: Layer) = {
-//    new Layer(weights + that.weights)
-//  }
+
+  //FIXME
+  //  def combine(that: Layer) = {
+  //    new Layer(weights + that.weights)
+  //  }
 
 }
 

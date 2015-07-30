@@ -31,16 +31,7 @@ object Test {
 //
     ff.fit(input, 10, 10)
     ff.saveAsTextFile("src/main/resources/out/model32-16.ffn")
-//
-////    println(ff.toString())
-//    ff.load("src/main/resources/out/model.ffn")
-//    for(d <- input) {
-//      val v = ff.predict(d._1)
-//      val label = d._2
-//
-//      println(v.toSeq.indexOf(v.toSeq.max) == label)
-//
-//    }
+
 
 
 
