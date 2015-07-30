@@ -1,31 +1,43 @@
 package org.piroyoung.classficate
 
+import org.apache.spark.rdd.RDD
 import org.piroyoung.linalg.Functions._
 import org.piroyoung.linalg.{ColVector, DenseMatrix}
+import java.io.{BufferedWriter, FileWriter}
+
+
+import scala.io.Source
 
 /**
  * Created by piroyoung on 7/25/15.
  */
 
-class FeedForwardNetwork(structure: Int*) {
-  private val s = structure
-  val sizes = s.drop(1) zip s.dropRight(1)
-  val outputSize = structure.last
-  val inputSize = structure(0)
-  var layers = sizes.map(x => Layer.init(x._1, x._2))
+class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
+  //  private val s = structure
+  //  val sizes = s.drop(1) zip s.dropRight(1)
+  //  val outputSize = structure.last
+  //  val inputSize = structure(0)
+  var layers = l
+  private var eta: Double = 1
+  private var act: Double => Double = dropSigmoid
 
-  override def toString(): String = layers.map(_.toString()).mkString("\n---\n")
+  def setEta(e: Double): FeedForwardNetwork = {
+    eta = e
+    this
+  }
 
-  def forward(input: ColVector): Seq[ColVector] = {
+  override def toString(): String = layers.map(_.weights).map(_.toString).mkString("\n---\n")
+
+  def forward(input: ColVector, a: Double => Double = sigmoid): Seq[ColVector] = {
     var in = input.addBias
     for (l <- layers) yield {
-      in = l.forward(in).addBias
+      in = l.forward(in ,a).addBias
       in
     }
   }
 
-  def backward(input: ColVector, answer: ColVector): Seq[DenseMatrix] = {
-    val outs = forward(input)
+  def backward(input: ColVector, answer: ColVector, a: Double => Double = sigmoid): Seq[DenseMatrix] = {
+    val outs = forward(input, a)
     val inputs = input.addBias +: outs.dropRight(1)
     val o = outs.last
     val lastDelta = ColVector(answer.rowIndices.map(i => {
@@ -46,14 +58,71 @@ class FeedForwardNetwork(structure: Int*) {
     })
   }
 
-  def fit(input: ColVector, answer: ColVector, eta: Double = 0.5): ColVector = {
-    val grads = backward(input, answer)
-    (layers zip grads).foreach(l => l._1.update(l._2))
-    forward(input).last.dropBias
+  def update(input: ColVector, answer: ColVector, a: Double => Double = sigmoid): Unit = {
+    val grads = backward(input, answer, a)
+    (layers zip grads).foreach(l => l._1.update(l._2 * eta))
+
+    val v = predict(input).toSeq
+    println(v.indexOf(v.max))
+    println(v.toString())
   }
 
+  def fit(data:Seq[(ColVector, Double)],k: Int, iter: Int): FeedForwardNetwork = {
+    for(i <- Range(0,iter); d <- data){
+      print(d._2.toString + "::")
+      update(d._1, ColVector.getOneOfK(d._2, k), act)
+    }
+    new FeedForwardNetwork(layers)
+  }
+
+//  def fit(data:RDD[(ColVector, Double)], k: Int, iter: Int, numPartitions: Int): FeedForwardNetwork = {
+//    val f = data.repartition(numPartitions)
+//      .mapPartitions(x => Iterator(fit(x, k, iter)))
+//      .map(x =>(x, 1))
+//      .reduce((x, y) => (x._1 combine  y._1, x._2 + y._2))
+//
+//
+//    new FeedForwardNetwork(f._1.layers.map(_.weights / f._2).map(new Layer(_)))
+//  }
+
   def predict(input: ColVector): ColVector = {
-    forward(input).last.dropBias
+    forward(input, sigmoid).last.dropBias
+  }
+
+  def saveAsTextFile(fileName: String): Unit = {
+    val bw = new BufferedWriter(new FileWriter(fileName))
+    for(line <- this.toString().split("\n")) {
+      bw.write(line + "\n")
+    }
+
+    bw.close()
+  }
+
+  def load(fileName: String): FeedForwardNetwork = {
+    val l = Source.fromFile(fileName).getLines()
+      .mkString("\n")
+      .split("\n---\n")
+      .map(
+        _.split("\n").toSeq.map(
+          _.split("\t").toSeq.map(_.toDouble)
+        )
+      )
+      .map(m => new Layer(new DenseMatrix(m)))
+
+    new FeedForwardNetwork(l)
+  }
+//FIXME
+//  def combine(that: FeedForwardNetwork): FeedForwardNetwork = {
+//    new FeedForwardNetwork((layers zip that.layers).map(x => x._1 combine (x._2)))
+//  }
+}
+
+object FeedForwardNetwork {
+  def apply(structure: Int*): FeedForwardNetwork = {
+    val s = structure
+    val sizes = s.drop(1) zip s.dropRight(1)
+    val layers = sizes.map(x => Layer.init(x._1, x._2))
+    new FeedForwardNetwork(layers)
   }
 }
 
@@ -68,11 +137,16 @@ class Layer(w: DenseMatrix) {
 
   def forward(input: ColVector, a: Double => Double = sigmoid): ColVector = (weights * input) activateWith a
 
+
   // returns previous deltas
   // *: culcs element-wise production
   def backward(input: ColVector, thisDelta: ColVector): ColVector = {
     (weights.dropLastCol.t * thisDelta) *: ColVector(input.dropBias.toSeq.map(y => y * (1 - y)))
   }
+//FIXME
+//  def combine(that: Layer) = {
+//    new Layer(weights + that.weights)
+//  }
 
 }
 

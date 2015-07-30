@@ -24,9 +24,8 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
 
   def col(j: Int): Seq[Double] = this.rowIndices.map(this(_, j))
 
-  def dropLastCol: DenseMatrix = {
-    new DenseMatrix(values.map(_.dropRight(1)))
-  }
+  def dropLastCol: DenseMatrix = new DenseMatrix(values.map(_.dropRight(1)))
+
 
   def *(that: DenseMatrix): DenseMatrix = {
     val v = this.rowIndices.map(i => {
@@ -48,13 +47,16 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
     new ColVector(v)
   }
 
+  def *(d: Double): DenseMatrix = new DenseMatrix(values.map(_.map(_ * d)))
+
+  def /(d: Double):DenseMatrix = new DenseMatrix(values.map(_.map(_ / d)))
+
   def +(that: DenseMatrix): DenseMatrix = {
     val v = this.rowIndices.map(i => {
       this.colIndices.map(j => {
         this(i, j) + that(i, j)
       })
     })
-
     new DenseMatrix(v)
   }
 
@@ -64,7 +66,6 @@ class DenseMatrix(v: Seq[Seq[Double]]) {
         this(i, j) - that(i, j)
       })
     })
-
     new DenseMatrix(v)
   }
 
@@ -100,6 +101,10 @@ class ColVector(v: Seq[Seq[Double]]) extends DenseMatrix(v) {
   def *:(that: ColVector): ColVector = {
     ColVector(that.rowIndices.map(i => this(i) * that(i)))
   }
+
+  override def /(v: Double): ColVector = {
+    ColVector(rowIndices.map(i => this(i) / v))
+  }
 }
 
 object ColVector {
@@ -111,6 +116,17 @@ object ColVector {
   //    new ColVector(v.map(Seq(_)))
   //  }
   def getOnes(n: Int): ColVector = ColVector(Seq.fill(n)(1.0))
+
+  def getOneOfK(label: Int, k: Int): ColVector = {
+    if(label > k) throw new IndexOutOfBoundsException
+    ColVector((0 to (k - 1)).map(x => if(x == label) 1.0 else 0.0))
+  }
+
+  def getOneOfK(label: Double, k: Double): ColVector = {
+    if(label > k) throw new IndexOutOfBoundsException
+    ColVector((0 to (k.toInt - 1)).map(x => if(x == label) 1.0 else 0.0))
+  }
 }
+
 
 
