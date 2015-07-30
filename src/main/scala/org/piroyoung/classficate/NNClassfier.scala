@@ -48,17 +48,14 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
     val outs = forward(input, a)
     val inputs = input.addBias +: outs.dropRight(1)
     val o = outs.last
-    val lastDelta = ColVector(answer.rowIndices.map(i => {
-      -1 * (answer(i) - o(i)) * o(i) * (1 - o(i))
-    }))
-
+    val lastDelta = ColVector(answer.rowIndices.map(i => -1 * (answer(i) - o(i)) * o(i) * (1 - o(i))))
     val layerInputs = layers zip inputs
     var d = lastDelta
+
     val dd = for (l <- layerInputs.reverse) yield {
       d = l._1.backward(l._2, d)
       d
     }
-
     val deltas = (lastDelta +: dd).dropRight(1).reverse
 
     deltas.indices.map(j => {
