@@ -18,20 +18,22 @@ object Test {
   }
 
   def learn(): Unit = {
-    val ff = FeedForwardNetwork(784, 64, 32, 10).setEta(0.1).setActivator(dropSigmoid)
+//    val ff = FeedForwardNetwork(784, 64, 32, 10).setEta(0.1).setActivator(dropSigmoid).setBatchSize(64)
+    val ff = FeedForwardNetwork.load("src/main/resources/out/model_64_32_5.ffn").setEta(0.1).setActivator(dropSigmoid).setBatchSize(64)
     val dat = Source.fromFile("src/main/resources/train.csv").getLines().map(_.stripMargin).toSeq
+
     val input = dat.zipWithIndex
       .filter(x => x._2 > 0)
       .map(_._1.split(',').map(_.toDouble))
       .map(x => (ColVector(x.drop(1).toSeq) / 255, x(0)))
 
-    ff.fit(input, 30)
-    ff.saveAsTextFile("src/main/resources/out/model_64_32_30.ffn")
+    ff.fit(input, 5)
+    ff.saveAsTextFile("src/main/resources/out/model_64_32_10.ffn")
   }
 
   def verify(): Unit = {
 
-    val ff = FeedForwardNetwork.load("src/main/resources/out/dummy.ffn")
+    val ff = FeedForwardNetwork.load("src/main/resources/out/model_64_32_5.ffn")
     val dat = Source.fromFile("src/main/resources/train.csv").getLines().map(_.stripMargin).toSeq
 
     val input = dat.zipWithIndex

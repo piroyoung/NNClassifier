@@ -13,10 +13,6 @@ import scala.util.Random
  */
 
 class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
-  //  private val s = structure
-  //  val sizes = s.drop(1) zip s.dropRight(1)
-  //  val outputSize = structure.last
-  //  val inputSize = structure(0)
   val random = new Random(1234)
   var layers = l
   private var eta: Double = 1
@@ -85,12 +81,12 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
     var cnt = 0
 
     for (i <- 0 to iter.+(-1)) {
-      val groupedData = random.shuffle(data).zipWithIndex.groupBy(_._2 / eachSize).map(_._2.unzip._1)
+      val groupedData = random.shuffle(data.map(x => (x._1, ColVector.getOneOfK(x._2, sizeK)))).zipWithIndex.groupBy(_._2 / eachSize).map(_._2.unzip._1)
       cnt = 0
       for (g <- groupedData) {
         cnt += g.length
         println(cnt + "of" + sizeDat + "::" + i.+(1))
-        val grads: Seq[DenseMatrix] = g.map(l => backward(l._1, ColVector.getOneOfK(l._2, sizeK)))
+        val grads: Seq[DenseMatrix] = g.map(l => backward(l._1, l._2))
           .reduce((x, y) => x.indices.map(i => x(i) + y(i)))
         (layers zip grads).foreach(l => l._1.update(l._2 * eta))
 
@@ -158,7 +154,6 @@ class Layer(w: DenseMatrix) {
   }
 
   def forward(input: ColVector, a: Double => Double = sigmoid): ColVector = (weights * input) activateWith a
-
 
   // returns previous deltas
   // *: culcs element-wise production
