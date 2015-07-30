@@ -5,6 +5,7 @@ import java.io.{BufferedWriter, FileWriter}
 import org.piroyoung.linalg.Functions._
 import org.piroyoung.linalg.{ColVector, DenseMatrix}
 
+import scala.util.Random
 import scala.io.Source
 
 /**
@@ -16,9 +17,11 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
   //  val sizes = s.drop(1) zip s.dropRight(1)
   //  val outputSize = structure.last
   //  val inputSize = structure(0)
+  val random = new Random(1234)
   var layers = l
   private var eta: Double = 1
   private var act: Double => Double = dropSigmoid
+  private var batchSize = 128
 
   def setEta(e: Double): FeedForwardNetwork = {
     eta = e
@@ -62,20 +65,38 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
     })
   }
 
-  def update(input: ColVector, answer: ColVector, a: Double => Double = sigmoid): Unit = {
+  def update(input: ColVector, answer: ColVector, a: Double => Double = act): Unit = {
     val grads = backward(input, answer, a)
     (layers zip grads).foreach(l => l._1.update(l._2 * eta))
 
     val v = predict(input).toSeq
-    println(v.indexOf(v.max))
-    println(v.toString())
+
   }
 
-  def fit(data: Seq[(ColVector, Double)], k: Int, iter: Int): FeedForwardNetwork = {
-    for (i <- Range(0, iter); d <- data) {
-      print(d._2.toString + "::")
-      update(d._1, ColVector.getOneOfK(d._2, k), act)
+  def fit(data: Seq[(ColVector, Double)], iter: Int, a: Double => Double = act): FeedForwardNetwork = {
+    val sizeK = data.map(_._2).max + 1
+    val sizeDat = data.length
+    val eachSize = batchSize
+    var cnt = 0
+
+    for( i <- 0 to iter.+(-1)) {
+      val groupedData = random.shuffle(data).zipWithIndex.groupBy(_._2 / eachSize).map(_._2.unzip._1)
+      cnt = 0
+      for(g <- groupedData) {
+        cnt += g.length
+        println(cnt + "of" + sizeDat + "::" + i.+(1))
+        val grads: Seq[DenseMatrix] = g.map(l => backward(l._1, ColVector.getOneOfK(l._2, sizeK)))
+          .reduce((x, y) => x.indices.map(i => x(i) + y(i)))
+        (layers zip grads).foreach(l => l._1.update(l._2 * eta))
+
+      }
+
     }
+
+//    for (i <- Range(0, iter); d <- data) {
+//      print(d._2.toString + "::")
+//      update(d._1, ColVector.getOneOfK(d._2, sizeK), a)
+//    }
     new FeedForwardNetwork(layers)
   }
 
