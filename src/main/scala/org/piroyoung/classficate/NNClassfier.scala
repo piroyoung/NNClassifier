@@ -5,8 +5,8 @@ import java.io.{BufferedWriter, FileWriter}
 import org.piroyoung.linalg.Functions._
 import org.piroyoung.linalg.{ColVector, DenseMatrix}
 
-import scala.util.Random
 import scala.io.Source
+import scala.util.Random
 
 /**
  * Created by piroyoung on 7/25/15.
@@ -30,6 +30,11 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
 
   def setActivator(f: Double => Double): FeedForwardNetwork = {
     act = f
+    this
+  }
+
+  def setBatchSize(k: Int): FeedForwardNetwork = {
+    batchSize = k
     this
   }
 
@@ -79,10 +84,10 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
     val eachSize = batchSize
     var cnt = 0
 
-    for( i <- 0 to iter.+(-1)) {
+    for (i <- 0 to iter.+(-1)) {
       val groupedData = random.shuffle(data).zipWithIndex.groupBy(_._2 / eachSize).map(_._2.unzip._1)
       cnt = 0
-      for(g <- groupedData) {
+      for (g <- groupedData) {
         cnt += g.length
         println(cnt + "of" + sizeDat + "::" + i.+(1))
         val grads: Seq[DenseMatrix] = g.map(l => backward(l._1, ColVector.getOneOfK(l._2, sizeK)))
@@ -93,10 +98,10 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
 
     }
 
-//    for (i <- Range(0, iter); d <- data) {
-//      print(d._2.toString + "::")
-//      update(d._1, ColVector.getOneOfK(d._2, sizeK), a)
-//    }
+    //    for (i <- Range(0, iter); d <- data) {
+    //      print(d._2.toString + "::")
+    //      update(d._1, ColVector.getOneOfK(d._2, sizeK), a)
+    //    }
     new FeedForwardNetwork(layers)
   }
 
