@@ -25,6 +25,11 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
     this
   }
 
+  def setActivator(f: Double => Double): FeedForwardNetwork = {
+    act = f
+    this
+  }
+
   override def toString(): String = layers.map(_.weights).map(_.toString).mkString("\n---\n")
 
   def forward(input: ColVector, a: Double => Double = sigmoid): Seq[ColVector] = {
@@ -74,18 +79,13 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
     new FeedForwardNetwork(layers)
   }
 
-  //  def fit(data:RDD[(ColVector, Double)], k: Int, iter: Int, numPartitions: Int): FeedForwardNetwork = {
-  //    val f = data.repartition(numPartitions)
-  //      .mapPartitions(x => Iterator(fit(x, k, iter)))
-  //      .map(x =>(x, 1))
-  //      .reduce((x, y) => (x._1 combine  y._1, x._2 + y._2))
-  //
-  //
-  //    new FeedForwardNetwork(f._1.layers.map(_.weights / f._2).map(new Layer(_)))
-  //  }
-
   def predict(input: ColVector): ColVector = {
     forward(input, sigmoid).last.dropBias
+  }
+
+  def predictLabel(input: ColVector): Double = {
+    val v = predict(input).toSeq
+    v.indexOf(v.max)
   }
 
   def saveAsTextFile(fileName: String): Unit = {
@@ -95,6 +95,16 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
     }
 
     bw.close()
+  }
+
+}
+
+object FeedForwardNetwork {
+  def apply(structure: Int*): FeedForwardNetwork = {
+    val s = structure
+    val sizes = s.drop(1) zip s.dropRight(1)
+    val layers = sizes.map(x => Layer.init(x._1, x._2))
+    new FeedForwardNetwork(layers)
   }
 
   def load(fileName: String): FeedForwardNetwork = {
@@ -109,20 +119,6 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
       .map(m => new Layer(new DenseMatrix(m)))
 
     new FeedForwardNetwork(l)
-  }
-
-  //FIXME
-  //  def combine(that: FeedForwardNetwork): FeedForwardNetwork = {
-  //    new FeedForwardNetwork((layers zip that.layers).map(x => x._1 combine (x._2)))
-  //  }
-}
-
-object FeedForwardNetwork {
-  def apply(structure: Int*): FeedForwardNetwork = {
-    val s = structure
-    val sizes = s.drop(1) zip s.dropRight(1)
-    val layers = sizes.map(x => Layer.init(x._1, x._2))
-    new FeedForwardNetwork(layers)
   }
 }
 
@@ -143,11 +139,6 @@ class Layer(w: DenseMatrix) {
   def backward(input: ColVector, thisDelta: ColVector): ColVector = {
     (weights.dropLastCol.t * thisDelta) *: ColVector(input.dropBias.toSeq.map(y => y * (1 - y)))
   }
-
-  //FIXME
-  //  def combine(that: Layer) = {
-  //    new Layer(weights + that.weights)
-  //  }
 
 }
 
