@@ -1,5 +1,7 @@
 # NNClassifier
 
+* 少し古い 書き直したい
+
 機械学習実装の修行用レポジトリ
 
 # FeedForwardNetwork
