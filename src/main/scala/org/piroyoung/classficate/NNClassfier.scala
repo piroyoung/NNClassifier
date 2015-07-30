@@ -94,10 +94,6 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
 
     }
 
-    //    for (i <- Range(0, iter); d <- data) {
-    //      print(d._2.toString + "::")
-    //      update(d._1, ColVector.getOneOfK(d._2, sizeK), a)
-    //    }
     new FeedForwardNetwork(layers)
   }
 
