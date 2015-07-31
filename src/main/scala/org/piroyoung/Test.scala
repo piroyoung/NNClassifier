@@ -15,11 +15,12 @@ object Test {
     learn()
 //    verify()
 
+//    FeedForwardNetwork.load("src/main/resources/out/model_64_32_10.ffn")
   }
 
   def learn(): Unit = {
-//    val ff = FeedForwardNetwork(784, 64, 32, 10).setEta(0.1).setActivator(dropSigmoid).setBatchSize(64)
-    val ff = FeedForwardNetwork.load("src/main/resources/out/model_64_32_5.ffn").setEta(0.1).setActivator(dropSigmoid).setBatchSize(64)
+//    val ff = FeedForwardNetwork(784, 128 , 64, 32, 10).setEta(0.1).setActivator(dropSigmoid).setBatchSize(32)
+    val ff = FeedForwardNetwork.load("src/main/resources/out/model128_64_32_5.ffn").setEta(0.3).setActivator(dropSigmoid).setBatchSize(32)
     val dat = Source.fromFile("src/main/resources/train.csv").getLines().map(_.stripMargin).toSeq
 
     val input = dat.zipWithIndex
@@ -28,12 +29,12 @@ object Test {
       .map(x => (ColVector(x.drop(1).toSeq) / 255, x(0)))
 
     ff.fit(input, 5)
-    ff.saveAsTextFile("src/main/resources/out/model_64_32_10.ffn")
+    ff.saveAsTextFile("src/main/resources/out/model128_64_32_10.ffn")
   }
 
   def verify(): Unit = {
 
-    val ff = FeedForwardNetwork.load("src/main/resources/out/model_64_32_5.ffn")
+    val ff = FeedForwardNetwork.load("src/main/resources/out/model128_64_32_5.ffn")
     val dat = Source.fromFile("src/main/resources/train.csv").getLines().map(_.stripMargin).toSeq
 
     val input = dat.zipWithIndex

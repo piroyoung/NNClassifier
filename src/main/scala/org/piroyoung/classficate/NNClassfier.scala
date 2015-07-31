@@ -17,7 +17,7 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
   var layers = l
   private var eta: Double = 1
   private var act: Double => Double = dropSigmoid
-  private var batchSize = 128
+  private var batchSize = 64
 
   def setEta(e: Double): FeedForwardNetwork = {
     eta = e
@@ -44,7 +44,7 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
     }
   }
 
-  def backward(input: ColVector, answer: ColVector, a: Double => Double = sigmoid): Seq[DenseMatrix] = {
+  def backward(input: ColVector, answer: ColVector, a: Double => Double = act): Seq[DenseMatrix] = {
     val outs = forward(input, a)
     val inputs = input.addBias +: outs.dropRight(1)
     val o = outs.last
@@ -67,8 +67,6 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
     val grads = backward(input, answer, a)
     (layers zip grads).foreach(l => l._1.update(l._2 * eta))
 
-    val v = predict(input).toSeq
-
   }
 
   def fit(data: Seq[(ColVector, Double)], iter: Int, a: Double => Double = act): FeedForwardNetwork = {
@@ -86,12 +84,10 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
         val grads: Seq[DenseMatrix] = g.map(l => backward(l._1, l._2))
           .reduce((x, y) => x.indices.map(i => x(i) + y(i)))
         (layers zip grads).foreach(l => l._1.update(l._2 * eta))
-
       }
-
     }
 
-    new FeedForwardNetwork(layers)
+    this
   }
 
   def predict(input: ColVector): ColVector = {
