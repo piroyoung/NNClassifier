@@ -89,9 +89,7 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
         val grads: Seq[DenseMatrix] = g.map(l => backward(l._1, l._2))
           .reduce((x, y) => x.indices.map(i => x(i) + y(i)))
         (layers zip grads).foreach(l => l._1.update(l._2 * eta))
-
       }
-
     }
 
     new FeedForwardNetwork(layers)
@@ -111,7 +109,6 @@ class FeedForwardNetwork(l: Seq[Layer]) extends Serializable {
     for (line <- this.toString().split("\n")) {
       bw.write(line + "\n")
     }
-
     bw.close()
   }
 
@@ -156,7 +153,6 @@ class Layer(w: DenseMatrix) {
   def backward(input: ColVector, thisDelta: ColVector): ColVector = {
     (weights.dropLastCol.t * thisDelta) *: ColVector(input.dropBias.toSeq.map(y => y * (1 - y)))
   }
-
 }
 
 object Layer {
